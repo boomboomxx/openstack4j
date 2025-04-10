@@ -19,16 +19,14 @@ import org.openstack4j.core.transport.HttpResponse;
 import org.openstack4j.core.transport.propagation.PropagateOnStatus;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.common.Payload;
-import org.openstack4j.model.image.v2.CachedImage;
-import org.openstack4j.model.image.v2.Image;
-import org.openstack4j.model.image.v2.ImageUpdate;
-import org.openstack4j.model.image.v2.Member;
+import org.openstack4j.model.image.v2.*;
 import org.openstack4j.openstack.image.v2.domain.CachedGlanceImage.CachedImages;
 import org.openstack4j.openstack.image.v2.domain.GlanceImage;
 import org.openstack4j.openstack.image.v2.domain.GlanceImageUpdate;
 import org.openstack4j.openstack.image.v2.domain.GlanceMember;
 
 import static org.openstack4j.core.transport.ClientConstants.CONTENT_TYPE_IMAGE_V2_PATCH;
+import static org.openstack4j.core.transport.ClientConstants.CONTENT_TYPE_JSON;
 import static org.openstack4j.core.transport.ClientConstants.CONTENT_TYPE_OCTECT_STREAM;
 import static org.openstack4j.core.transport.ClientConstants.HEADER_ACCEPT;
 import static org.openstack4j.core.transport.ClientConstants.HEADER_CONTENT_TYPE;
@@ -283,5 +281,13 @@ public class ImageServiceImpl extends BaseImageServices implements ImageService 
     @Override
     public TaskService tasks() {
         return Apis.get(TaskService.class);
+    }
+
+    @Override
+    public ActionResponse importImage(ImageImport imageImport) {
+        Objects.requireNonNull(imageImport);
+        return post(ActionResponse.class, uri("/images/%s/import", imageImport.getImageId()))
+                .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+                .entity(imageImport).execute();
     }
 }

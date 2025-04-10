@@ -16,6 +16,8 @@ import org.openstack4j.model.heat.builder.*;
 import org.openstack4j.model.identity.v2.builder.IdentityV2Builders;
 import org.openstack4j.model.identity.v3.builder.*;
 import org.openstack4j.model.image.builder.ImageBuilder;
+import org.openstack4j.model.image.v2.builder.ImageImportBuilder;
+import org.openstack4j.model.image.v2.builder.ImageImportMethodBuilder;
 import org.openstack4j.model.image.v2.builder.ImageUpdateBuilder;
 import org.openstack4j.model.image.v2.builder.TaskBuilder;
 import org.openstack4j.model.magnum.BaymodelBuilder;
@@ -50,6 +52,8 @@ import org.openstack4j.openstack.identity.v2.builder.KeystoneV2Builders;
 import org.openstack4j.openstack.identity.v3.builder.KeystoneV3Builders;
 import org.openstack4j.openstack.identity.v3.domain.*;
 import org.openstack4j.openstack.image.domain.GlanceImage;
+import org.openstack4j.openstack.image.v2.domain.GlanceImageImport;
+import org.openstack4j.openstack.image.v2.domain.GlanceImageImportMethod;
 import org.openstack4j.openstack.image.v2.domain.GlanceImageUpdate;
 import org.openstack4j.openstack.image.v2.domain.GlanceTask;
 import org.openstack4j.openstack.magnum.MagnumBaymodel;
@@ -1165,6 +1169,14 @@ public class Builders {
      */
     public static ImageUpdateBuilder imageUpdateV2() {
         return GlanceImageUpdate.builder();
+    }
+
+    public static ImageImportMethodBuilder imageImportMethod() {
+        return GlanceImageImportMethod.builder();
+    }
+
+    public static ImageImportBuilder imageImport() {
+        return GlanceImageImport.builder();
     }
 
     /**

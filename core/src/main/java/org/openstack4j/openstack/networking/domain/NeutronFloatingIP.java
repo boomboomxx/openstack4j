@@ -6,10 +6,10 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import org.openstack4j.util.ToStringHelper;
 import org.openstack4j.model.network.NetFloatingIP;
 import org.openstack4j.model.network.builder.NetFloatingIPBuilder;
 import org.openstack4j.openstack.common.ListResult;
+import org.openstack4j.util.ToStringHelper;
 
 /**
  * An OpenStack Neutron Floating IP Model.
@@ -41,6 +41,9 @@ public class NeutronFloatingIP implements NetFloatingIP {
 
     @JsonProperty("fixed_ip_address")
     private String fixedIpAddress;
+
+    @JsonProperty("subnet_id")
+    private String subnetId;
 
     @JsonProperty("port_id")
     private String portId;
@@ -175,6 +178,16 @@ public class NeutronFloatingIP implements NetFloatingIP {
         this.fixedIpAddress = fixedIpAddress;
     }
 
+    @Override
+    public String getSubnetId() {
+        return subnetId;
+    }
+
+
+    public void setSubnetId(String subnetId) {
+        this.subnetId = subnetId;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -244,6 +257,7 @@ public class NeutronFloatingIP implements NetFloatingIP {
         String distinctTenantId = Objects.equals(tenantId, projectId) ? null: tenantId;
         return new ToStringHelper(this)
                 .add("id", id).add("routerId", routerId).add("floatingNetworkId", floatingNetworkId)
+                .add("subnetId", subnetId)
                 .add("projectId", projectId).add("tenantId", distinctTenantId)
                 .add("floatingIpAddress", floatingIpAddress).add("fixedIpAddress", fixedIpAddress).add("portId", portId).add("status", status)
                 .toString();
@@ -369,6 +383,12 @@ public class NeutronFloatingIP implements NetFloatingIP {
         @Override
         public NetFloatingIPBuilder fixedIpAddress(String address) {
             f.fixedIpAddress = address;
+            return this;
+        }
+
+        @Override
+        public NetFloatingIPBuilder subnetId(String subnetId) {
+            f.subnetId = subnetId;
             return this;
         }
 

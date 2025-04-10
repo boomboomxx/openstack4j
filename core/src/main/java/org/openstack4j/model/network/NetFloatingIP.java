@@ -61,6 +61,8 @@ public interface NetFloatingIP extends ModelEntity, Buildable<NetFloatingIPBuild
      */
     String getFixedIpAddress();
 
+    String getSubnetId();
+
     /**
      * Gets the port id.
      *

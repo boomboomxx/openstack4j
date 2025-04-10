@@ -36,6 +36,8 @@ public interface NetFloatingIPBuilder extends Builder<NetFloatingIPBuilder, NetF
      */
     NetFloatingIPBuilder fixedIpAddress(String address);
 
+    NetFloatingIPBuilder subnetId(String subnetId);
+
     /**
      * Textual description of the resource.
      *

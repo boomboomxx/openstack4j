@@ -8,10 +8,7 @@ import java.util.Map;
 import org.openstack4j.common.RestService;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.common.Payload;
-import org.openstack4j.model.image.v2.CachedImage;
-import org.openstack4j.model.image.v2.Image;
-import org.openstack4j.model.image.v2.ImageUpdate;
-import org.openstack4j.model.image.v2.Member;
+import org.openstack4j.model.image.v2.*;
 
 /**
  * OpenStack (Glance) Image V2 support
@@ -164,4 +161,6 @@ public interface ImageService extends RestService {
      * @return the image v2 tasks service
      */
     TaskService tasks();
+
+    ActionResponse importImage(ImageImport imageImport);
 }

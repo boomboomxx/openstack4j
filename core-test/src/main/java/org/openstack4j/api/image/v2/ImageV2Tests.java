@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -13,10 +14,16 @@ import java.util.Map;
 
 import org.openstack4j.api.AbstractTest;
 import org.openstack4j.api.Builders;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.core.transport.Config;
 import org.openstack4j.model.common.ActionResponse;
+import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.common.Payload;
 import org.openstack4j.model.common.Payloads;
 import org.openstack4j.model.image.v2.*;
+import org.openstack4j.openstack.OSFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
@@ -44,6 +51,7 @@ public class ImageV2Tests extends AbstractTest {
                     "00b4 5b1b b4fa 0707 c2ac 378b e722 514d\n" +
                     "5fb9 e9a0 7f9f fa4c 645d 113c 0524 b380\n" +
                     "acee 6344 1f45 b58b 1eb2 8776 3e9b 9aef";
+    private static final Logger log = LoggerFactory.getLogger(ImageV2Tests.class);
 
     public void testListImages() throws IOException {
         respondWith(IMAGES_JSON);
@@ -252,6 +260,65 @@ public class ImageV2Tests extends AbstractTest {
         ActionResponse upload = osv3().imagesV2().upload(imageId, payload, null);
         assertTrue(upload.isSuccess());
     }
+
+    public void UploadImageByUrl() throws IOException {
+        respondWith(204);
+
+        OSClient.OSClientV3 v3 = OSFactory.builderV3()
+                .withConfig(Config.newConfig()
+                        .withConnectionTimeout(1999999999)
+                        .withReadTimeout(1999999999)
+                )
+                .endpoint("http://192.168.101.228:5000/v3")
+                .scopeToProject(Identifier.byName("admin"), Identifier.byName("Default"))
+                .credentials("admin", "Jxsz@2024", Identifier.byName("Default"))
+                .authenticate();
+
+        Image image = v3.imagesV2().create(Builders.imageV2()
+                .name("CentOS-7-x86_64-GenericCloud-1707-1")
+                .containerFormat(ContainerFormat.BARE)
+                .diskFormat(DiskFormat.QCOW2)
+                .build());
+
+        try (Payload<URL> pld = Payloads.create(new URL("http://minio-api.ucc-dev2.sziscloud.com/szis-bucket/CentOS-7-x86_64-GenericCloud-1707.qcow2?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=P44BL5HG3PFGNOJBG8DW%2F20250401%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250401T010807Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJQNDRCTDVIRzNQRkdOT0pCRzhEVyIsImV4cCI6MTc0MzUxMjU3NiwicGFyZW50IjoiYWRtaW4ifQ.rWtc6jIIAd_mcjGRIGAryn5XEUJC0nOyGYNE_rWzy-DUA-5fFZ7vSAKyj9RIu54jzJy8lZLqiFzx1sLLGbIxRQ&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=c0ee8e3c300d8da15682c35f57af31d6e510cf29f9ba50ff618838da21cfde77"))) {
+            ActionResponse upload = v3.imagesV2().upload(image.getId(), pld, null);
+            System.out.printf("upload result: %s, msg: %s%n", upload.getCode(), upload.getFault());
+            assertTrue(upload.isSuccess());
+        }
+
+    }
+
+    public void importImage() throws IOException {
+        respondWith(204);
+        OSClient.OSClientV3 v3 = OSFactory.builderV3()
+                .withConfig(Config.newConfig()
+                        .withConnectionTimeout(1999999999)
+                        .withReadTimeout(1999999999)
+                )
+                .endpoint("http://192.168.101.228:5000/v3")
+                .scopeToProject(Identifier.byName("admin"), Identifier.byName("Default"))
+                .credentials("admin", "Jxsz@2024", Identifier.byName("Default"))
+                .authenticate();
+
+        Image image = v3.imagesV2().create(Builders.imageV2()
+                .name("CentOS-7-x86_64-GenericCloud-1707-2")
+                .containerFormat(ContainerFormat.BARE)
+                .diskFormat(DiskFormat.QCOW2)
+                .build());
+        ImageImport imageImport = Builders.imageImport()
+                .method(Builders.imageImportMethod()
+                        .name(ImageImportMethod.WEB_DOWNLOAD)
+                        .uri("http://minio-api.ucc-dev2.sziscloud.com/szis-bucket/CentOS-7-x86_64-GenericCloud-1707.qcow2?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=P44BL5HG3PFGNOJBG8DW%2F20250401%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250401T064534Z&X-Amz-Expires=604800&X-Amz-Security-Token=eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJQNDRCTDVIRzNQRkdOT0pCRzhEVyIsImV4cCI6MTc0MzUxMjU3NiwicGFyZW50IjoiYWRtaW4ifQ.rWtc6jIIAd_mcjGRIGAryn5XEUJC0nOyGYNE_rWzy-DUA-5fFZ7vSAKyj9RIu54jzJy8lZLqiFzx1sLLGbIxRQ&X-Amz-SignedHeaders=host&versionId=null&X-Amz-Signature=072d40e2c9597fc24106a50b7f27ed7780e2900dbdce16cdf715ea2860510de4")
+                        .build())
+                .imageId(image.getId())
+                .allStores(false)
+                .allStoresMustSucceed(true)
+                .build();
+        ActionResponse resp = osv3().imagesV2().importImage(imageImport);
+        System.out.printf("upload result: %s, msg: %s%n", resp.getCode(), resp.getFault());
+        assertTrue(resp.isSuccess());
+    }
+
 
     public void DownloadImage() throws IOException {
         respondWith(200);
