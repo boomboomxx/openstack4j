@@ -14,6 +14,7 @@ import org.openstack4j.api.artifact.ArtifactService;
 import org.openstack4j.api.barbican.BarbicanService;
 import org.openstack4j.api.client.CloudProvider;
 import org.openstack4j.api.compute.ComputeService;
+import org.openstack4j.api.container.ContainerService;
 import org.openstack4j.api.dns.v2.DNSService;
 import org.openstack4j.api.gbp.GbpService;
 import org.openstack4j.api.heat.HeatService;
@@ -167,6 +168,10 @@ public abstract class OSClientSession<R, T extends OSClient<T>> implements Endpo
 
     public org.openstack4j.api.image.v2.ImageService imagesV2() {
         return Apis.getImageV2Service();
+    }
+
+    public ContainerService containers() {
+        return Apis.get(ContainerService.class);
     }
 
     /**

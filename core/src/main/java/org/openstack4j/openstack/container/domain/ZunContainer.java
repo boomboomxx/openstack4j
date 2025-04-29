@@ -1,12 +1,11 @@
 package org.openstack4j.openstack.container.domain;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.openstack4j.model.common.Link;
 import org.openstack4j.model.container.Container;
+import org.openstack4j.openstack.common.GenericLink;
 import org.openstack4j.openstack.common.ListResult;
 
 /**
@@ -16,43 +15,58 @@ import org.openstack4j.openstack.common.ListResult;
 public class ZunContainer implements Container {
     private static final long serialVersionUID = 1L;
 
-    private String uuid;
-    private String name;
-    private String image;
+    String uuid;
+    String name;
+    String image;
     @JsonProperty("image_driver")
-    private String imageDriver;
-    private List<String> command; // Check API response format, might be a single string
-    private String status;
+    String imageDriver;
+    List<String> command; // Check API response format, might be a single string
+    String status;
     @JsonProperty("status_reason")
-    private String statusReason;
+    String statusReason;
     @JsonProperty("task_state")
-    private String taskState;
-    private Float cpu;
-    private String memory; // API often returns as string like "512M" or "1G"
-    private String workdir;
-    private List<Map<String, Object>> ports;
-    private String host;
-    private Map<String, String> environment;
-    private Map<String, String> labels;
-    private Map<String, List<Map<String, Object>>> addresses;
+    String taskState;
+    Float cpu;
+    String memory; // API often returns as string like "512M" or "1G"
+    String workdir;
+    List<String> ports;
+    String host;
+    Map<String, String> environment;
+    Map<String, String> labels;
+    Map<String, List<ZunContainerAddress>> addresses;
     @JsonProperty("security_groups")
-    private List<String> securityGroups;
+    List<String> securityGroups;
     @JsonProperty("restart_policy")
-    private Map<String, Object> restartPolicy;
+    Map<String, Object> restartPolicy;
     @JsonProperty("status_detail")
-    private String statusDetail;
-    private Boolean interactive;
+    String statusDetail;
+    Boolean interactive;
     @JsonProperty("auto_remove")
-    private Boolean autoRemove;
+    Boolean autoRemove;
     @JsonProperty("image_pull_policy")
-    private String imagePullPolicy;
+    String imagePullPolicy;
     @JsonProperty("created_at")
-    private Date createdAt;
+    String createdAt;
     @JsonProperty("updated_at")
-    private Date updatedAt;
-    private List<Link> links;
+    String updatedAt;
+    List<GenericLink> links;
+    Boolean tty;
+    String hostname;
+    @JsonProperty("auto_heal")
+    Boolean autoHeal;
+    Boolean privileged;
+    @JsonProperty("user_id")
+    String userId;
+    @JsonProperty("project_id")
+    String projectId;
+    Integer disk;
+    ZunContainerHealthcheck healthcheck;
+    @JsonProperty("cpu_policy")
+    Container.CpuPolicy cpuPolicy;
+    @JsonProperty("registry_id")
+    String registryId;
+    List<String> entrypoint;
 
-    // --- Getters ---
 
     @Override
     public String getUuid() {
@@ -106,7 +120,7 @@ public class ZunContainer implements Container {
      * @return Memory in MiB, or null if parsing fails. 以 MiB 为单位的内存，如果解析失败则为 null。
      */
     @Override
-    public Integer getMemoryMb() {
+    public Integer getMemory() {
         if (memory == null || memory.isEmpty()) {
             return null;
         }
@@ -121,7 +135,7 @@ public class ZunContainer implements Container {
                 return Math.round(Integer.parseInt(memUpper.substring(0, memUpper.length() - 1)) / 1024.0f);
             } else {
                 // Assume bytes if no suffix, convert to MB
-                return Math.round(Long.parseLong(memUpper) / (1024.0f * 1024.0f));
+                return Integer.parseInt(memory);
             }
         } catch (NumberFormatException e) {
             // Log error or handle appropriately
@@ -136,7 +150,7 @@ public class ZunContainer implements Container {
     }
 
     @Override
-    public List<Map<String, Object>> getPorts() {
+    public List<String> getPorts() {
         return ports;
     }
 
@@ -156,7 +170,7 @@ public class ZunContainer implements Container {
     }
 
     @Override
-    public Map<String, List<Map<String, Object>>> getAddresses() {
+    public Map<String, List<ZunContainerAddress>> getAddresses() {
         return addresses;
     }
 
@@ -191,18 +205,73 @@ public class ZunContainer implements Container {
     }
 
     @Override
-    public Date getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
     @Override
-    public Date getUpdatedAt() {
+    public String getUpdatedAt() {
         return updatedAt;
     }
 
     @Override
-    public List<Link> getLinks() {
+    public List<GenericLink> getLinks() {
         return links;
+    }
+
+    @Override
+    public Boolean getTty() {
+        return tty;
+    }
+
+    @Override
+    public String getHostname() {
+        return hostname;
+    }
+
+    @Override
+    public Boolean getAutoHeal() {
+        return autoHeal;
+    }
+
+    @Override
+    public Boolean getPrivileged() {
+        return privileged;
+    }
+
+    @Override
+    public String getUserId() {
+        return userId;
+    }
+
+    @Override
+    public String getProjectId() {
+        return projectId;
+    }
+
+    @Override
+    public Integer getDisk() {
+        return disk;
+    }
+
+    @Override
+    public ZunContainerHealthcheck getHealthcheck() {
+        return healthcheck;
+    }
+
+    @Override
+    public String getRegistryId() {
+        return registryId;
+    }
+
+    @Override
+    public CpuPolicy getCpuPolicy() {
+        return cpuPolicy;
+    }
+
+    @Override
+    public List<String> getEntrypoint() {
+        return entrypoint;
     }
 
     @Override
@@ -227,7 +296,7 @@ public class ZunContainer implements Container {
     public static class ZunContainers extends ListResult<ZunContainer> {
         private static final long serialVersionUID = 1L;
         @JsonProperty("containers") // JSON key for the list
-        private List<ZunContainer> list;
+        List<ZunContainer> list;
 
         @Override
         protected List<ZunContainer> value() {

@@ -1,0 +1,8 @@
+{
+    "name": "test2",
+    "project_id": "cf916f391863491b9662ab6d8bf6428b",
+    "user_id": "7b4e138d7c8347c9adf6bedc18313ada",
+    "image": "docker.io/nginx:latest",
+    "cpu": 2.0,
+    "memory": 1024
+}

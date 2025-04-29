@@ -260,6 +260,7 @@ public class DefaultAPIProvider implements APIProvider {
         bind(SchedulerStatsGetPoolService.class, SchedulerStatsGetPoolServiceImpl.class);
         bind(BarbicanService.class, BarbicanServiceImpl.class);
         bind(ContainerService.class, ContainerServiceImpl.class);
+        bind(org.openstack4j.api.container.ContainerService.class, org.openstack4j.openstack.container.internal.ContainerServiceImpl.class);
         bind(SecretService.class, SecretServiceImpl.class);
         bind(TackerService.class, TackerServiceImpl.class);
         bind(VnfdService.class, VnfdServiceImpl.class);

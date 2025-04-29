@@ -1,5 +1,6 @@
 package org.openstack4j.openstack.container.internal;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,8 +26,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ContainerServiceImpl extends BaseContainerService implements ContainerService {
 
-    private static final String CONTAINER_PATH = "/containers"; // Base path
+    private static final String CONTAINER_PATH = "containers"; // Base path
     private static final String ACTION_PATH = "/action";       // Action subpath
+    private static final String CONTAINER_API_VERSION = "container 1.12";
 
     @Override
     public List<? extends Container> list() {
@@ -35,7 +37,7 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
 
     @Override
     public List<? extends Container> list(Map<String, String> filteringParams) {
-        Invocation<ZunContainer.ZunContainers> req = get(ZunContainer.ZunContainers.class, CONTAINER_PATH);
+        Invocation<ZunContainer.ZunContainers> req = get(ZunContainer.ZunContainers.class, uri(CONTAINER_PATH));
         if (filteringParams != null && !filteringParams.isEmpty()) {
             for (Map.Entry<String, String> entry : filteringParams.entrySet()) {
                 req = req.param(entry.getKey(), entry.getValue());
@@ -47,40 +49,39 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
     @Override
     public Container get(String containerIdOrName) {
         checkNotNull(containerIdOrName);
-        return get(ZunContainer.class, CONTAINER_PATH, "/", containerIdOrName).execute();
+        return get(ZunContainer.class, uri("%s/%s", CONTAINER_PATH, containerIdOrName)).execute();
     }
 
     @Override
-    public Container create(ContainerCreate containerConfig) {
-        checkNotNull(containerConfig);
-        checkNotNull(containerConfig.getImage(), "Image must be set in ContainerCreate config");
-        return post(ZunContainer.class, CONTAINER_PATH)
-                .entity(containerConfig)
+    public Container create(ContainerCreate container) {
+        checkNotNull(container);
+        checkNotNull(container.getImage(), "Image must be set in ContainerCreate config");
+        return post(ZunContainer.class, uri(CONTAINER_PATH))
+                .entity(container)
                 .execute();
     }
 
     @Override
-    public ActionResponse delete(String containerIdOrName, boolean force) {
+    public ActionResponse delete(String containerIdOrName, boolean force, boolean stop) {
         checkNotNull(containerIdOrName);
-        return delete(ActionResponse.class, CONTAINER_PATH, "/", containerIdOrName)
-                .param("force", force) // Add force parameter
+        Map<String, String> params = new HashMap<>();
+        if (force) {
+            params.put("force", "True");
+        }
+        if (stop) {
+            params.put("stop", "True");
+        }
+        return deleteWithResponse(uri("%s/%s", CONTAINER_PATH, containerIdOrName))
+                .params(params)
                 .execute();
     }
-
-    // --- Action Methods ---
 
     private ActionResponse performAction(String containerIdOrName, ContainerAction action) {
         checkNotNull(containerIdOrName);
         checkNotNull(action);
-        // Zun API might use /action endpoint or dedicated endpoints like /start
-        // Assuming /action endpoint for consistency here based on some OpenStack trends
         return post(ActionResponse.class, uri("%s/%s%s", CONTAINER_PATH, containerIdOrName, ACTION_PATH))
                 .params(action.getAction()) // Send {"action_name": {params...}}
                 .execute();
-        // Alternative for dedicated endpoints:
-//         return post(ActionResponse.class, uri("%s/%s/%s", CONTAINER_PATH, containerIdOrName, actionName))
-//                .params(paramsMap) // If params are query params
-//                .execute();
     }
 
     private ActionResponse performActionWithQueryParams(String containerIdOrName, String actionName, Map<String, Object> queryParams) {
@@ -89,27 +90,24 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
         // Assumes dedicated endpoint like /stop?timeout=10
         Invocation<ActionResponse> req = post(ActionResponse.class, uri("%s/%s/%s", CONTAINER_PATH, containerIdOrName, actionName));
         if (queryParams != null && !queryParams.isEmpty()) {
-            queryParams.forEach((k, v) -> req.param(k, String.valueOf(v))); // Convert values to String for query params
+            queryParams.forEach((k, v) -> req.param(k, String.valueOf(v)));
         }
         return req.execute();
     }
 
     @Override
     public ActionResponse start(String containerIdOrName) {
-        // return performAction(containerIdOrName, ContainerAction.start()); // Using /action
         return performActionWithQueryParams(containerIdOrName, "start", null); // Using /start
     }
 
     @Override
     public ActionResponse stop(String containerIdOrName, Integer timeout) {
-        // return performAction(containerIdOrName, ContainerAction.stop(timeout)); // Using /action
         Map<String, Object> params = (timeout != null) ? ImmutableMap.of("timeout", timeout): null;
         return performActionWithQueryParams(containerIdOrName, "stop", params); // Using /stop
     }
 
     @Override
     public ActionResponse restart(String containerIdOrName, Integer timeout) {
-        // return performAction(containerIdOrName, ContainerAction.restart(timeout)); // Using /action
         Map<String, Object> params = (timeout != null) ? ImmutableMap.of("timeout", timeout): null;
         return performActionWithQueryParams(containerIdOrName, "reboot", params); // Using /restart
     }
@@ -144,7 +142,6 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
         // Assuming payload here for potential complexity
         return post(ZunExecResponse.class, uri("%s/%s/execute", CONTAINER_PATH, containerIdOrName))
                 .params(ImmutableMap.of("command", params.getCommand(), "interactive", params.isInteractive()))
-                // .params(params.getQueryParameters()) // Alternative if using query params
                 .execute();
     }
 
@@ -161,7 +158,7 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
     // Helper class for Attach response
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class AttachResponse {
-        @JsonProperty("url") // Adjust field name based on actual API
+        @JsonProperty("url")
         String url;
 
         public String getUrl() {
@@ -177,8 +174,6 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
         checkNotNull(params.getRepository(), "Repository must be provided for commit");
         Invocation<ActionResponse> req = post(ActionResponse.class, uri("%s/%s/commit", CONTAINER_PATH, containerIdOrName));
         params.getQueryParameters().forEach((k, v) -> req.param(k, String.valueOf(v)));
-        // If commit returns Image details, change return type and target class:
-        // Invocation<ZunImage> req = post(ZunImage.class, ...);
         return req.execute();
     }
 
@@ -194,9 +189,8 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
     public Container update(String containerIdOrName, ContainerUpdate options) {
         checkNotNull(containerIdOrName);
         checkNotNull(options);
-        // Use PATCH method
         return patch(ZunContainer.class, uri("%s/%s", CONTAINER_PATH, containerIdOrName))
-                .entity(options) // Send the list of patch operations directly
+                .entity(options)
                 .execute();
     }
 
@@ -206,8 +200,7 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
         if (options.getNetwork() == null && options.getPort() == null) {
             throw new IllegalArgumentException("Either network or port must be specified for networkAttach");
         }
-        // return performAction(containerIdOrName, ContainerAction.networkAttach(options)); // Using /action
-        return performActionWithPayload(containerIdOrName, "network_attach", options); // Using dedicated endpoint
+        return performActionWithPayload(containerIdOrName, "network_attach", options);
     }
 
     @Override
@@ -216,8 +209,7 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
         if (options.getNetwork() == null && options.getPort() == null) {
             throw new IllegalArgumentException("Either network or port must be specified for networkDetach");
         }
-        // return performAction(containerIdOrName, ContainerAction.networkDetach(options)); // Using /action
-        return performActionWithPayload(containerIdOrName, "network_detach", options); // Using dedicated endpoint
+        return performActionWithPayload(containerIdOrName, "network_detach", options);
     }
 
     private ActionResponse performActionWithPayload(String containerIdOrName, String actionName, Object payload) {
@@ -235,14 +227,12 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
     @Override
     public ActionResponse addSecurityGroup(String containerIdOrName, String securityGroupName) {
         checkNotNull(securityGroupName);
-        // return performAction(containerIdOrName, ContainerAction.addSecurityGroup(securityGroupName)); // Using /action
         return performActionWithPayload(containerIdOrName, "add_security_group", ImmutableMap.of("security_group", securityGroupName)); // Using dedicated endpoint
     }
 
     @Override
     public ActionResponse removeSecurityGroup(String containerIdOrName, String securityGroupName) {
         checkNotNull(securityGroupName);
-        // return performAction(containerIdOrName, ContainerAction.removeSecurityGroup(securityGroupName)); // Using /action
         return performActionWithPayload(containerIdOrName, "remove_security_group", ImmutableMap.of("security_group", securityGroupName)); // Using dedicated endpoint
     }
 }

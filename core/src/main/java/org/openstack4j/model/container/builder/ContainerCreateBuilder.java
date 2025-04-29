@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.openstack4j.common.Buildable;
 import org.openstack4j.model.container.ContainerCreate;
+import org.openstack4j.model.container.ContainerNets;
+import org.openstack4j.model.container.Healthcheck;
+import org.openstack4j.model.container.Mounts;
 
 /**
  * @author xx
@@ -39,7 +42,7 @@ public interface ContainerCreateBuilder extends Buildable.Builder<ContainerCreat
 
     ContainerCreateBuilder interactive(boolean interactive);
 
-    ContainerCreateBuilder imageDriver(String imageDriver);
+    ContainerCreateBuilder imageDriver(ContainerCreate.ImageDriver imageDriver);
 
     ContainerCreateBuilder securityGroups(List<String> securityGroups);
 
@@ -49,7 +52,7 @@ public interface ContainerCreateBuilder extends Buildable.Builder<ContainerCreat
 
     ContainerCreateBuilder addHint(String key, String value);
 
-    ContainerCreateBuilder nets(List<Map<String, String>> nets); // e.g., [{"network": "uuid"}, {"port": "uuid"}]
+    ContainerCreateBuilder nets(List<ContainerNets> nets); // e.g., [{"network": "uuid"}, {"port": "uuid"}]
 
     ContainerCreateBuilder addNet(String networkId);
 
@@ -61,4 +64,21 @@ public interface ContainerCreateBuilder extends Buildable.Builder<ContainerCreat
     ContainerCreateBuilder runtime(String runtime); // e.g., "runc"
 
     ContainerCreateBuilder hostname(String hostname);
+
+    ContainerCreateBuilder autoHeal(boolean autoHeal);
+
+    ContainerCreateBuilder availabilityZone(String availabilityZone);
+
+    ContainerCreateBuilder mounts(Mounts mounts);
+
+    ContainerCreateBuilder privileged(boolean privileged);
+
+    ContainerCreateBuilder healthcheck(Healthcheck healthcheck);
+
+    ContainerCreateBuilder exposedPorts(Map<String, Object> exposedPorts);
+
+    ContainerCreateBuilder host(String host);
+
+    ContainerCreateBuilder entrypoint(List<String> entrypoint);
+
 }

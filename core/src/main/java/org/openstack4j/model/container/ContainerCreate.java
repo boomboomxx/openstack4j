@@ -34,18 +34,99 @@ public interface ContainerCreate extends ModelEntity, Buildable<ContainerCreateB
 
     Boolean isInteractive();
 
-    String getImageDriver();
+    ImageDriver getImageDriver();
 
     List<String> getSecurityGroups();
 
     Map<String, String> getHints();
 
-    List<Map<String, String>> getNets();
+    List<ContainerNets> getNets();
 
-    // mounts
     Boolean isAutoRemove();
 
     String getRuntime();
 
     String getHostname();
+
+
+    /**
+     * The flag indicating whether to heal non-existent containers in Docker (optional).
+     *
+     * @return the autoHeal value
+     */
+    Boolean isAutoHeal();
+
+    /**
+     * The availability zone to run the container, providing physical isolation and redundancy.
+     * Containers can be distributed across availability zones for high availability (optional).
+     *
+     * @return the availabilityZone value
+     */
+    String getAvailabilityZone();
+
+    /**
+     * List of volume mount configurations specifying how volumes are mounted into the container (optional).
+     * Each entry can define type (volume/bind), source, destination, and other volume parameters.
+     *
+     * @return the mounts configuration
+     */
+    Mounts getMounts();
+
+    /**
+     * Whether to give extended privileges to the container (optional).
+     *
+     * @return the privileged flag
+     */
+    Boolean isPrivileged();
+
+    /**
+     * Health check configuration for the container, including test command, interval, retries, and timeout (optional).
+     *
+     * @return the healthcheck configuration (e.g., a Map containing test, interval, retries, timeout)
+     */
+    Healthcheck getHealthcheck();
+
+    /**
+     * Ports to expose from the container, formatted as {"<port>/<protocol>": {}} (optional).
+     *
+     * @return the exposed ports configuration
+     */
+    Map<String, Object> getExposedPorts();
+
+    /**
+     * The name of the host where the container should be created (optional, admin-only).
+     *
+     * @return the host name
+     */
+    String getHost();
+
+    /**
+     * The entrypoint that overwrites the default ENTRYPOINT of the image (optional).
+     *
+     * @return the entrypoint command as a list of strings
+     */
+    List<String> getEntrypoint();
+
+    enum ImageDriver {
+        DOCKER,
+        GLANCE,
+        UNKNOWN;
+
+        public static ImageDriver value(String value) {
+            if (value == null) {
+                return UNKNOWN;
+            }
+            for (ImageDriver driver : values()) {
+                if (driver.name().equalsIgnoreCase(value)) {
+                    return driver;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        public String value() {
+            return name().toLowerCase();
+        }
+
+    }
 }

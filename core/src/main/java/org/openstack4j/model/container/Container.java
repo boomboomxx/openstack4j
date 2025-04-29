@@ -1,11 +1,14 @@
 package org.openstack4j.model.container;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.openstack4j.model.ModelEntity;
-import org.openstack4j.model.common.Link;
+import org.openstack4j.openstack.common.GenericLink;
+import org.openstack4j.openstack.container.domain.ZunContainerAddress;
+import org.openstack4j.openstack.container.domain.ZunContainerHealthcheck;
 
 /**
  * Container
@@ -62,7 +65,7 @@ public interface Container extends ModelEntity {
     /**
      * @return The amount of memory allocated to the container (in MiB). 分配给容器的内存量 (以 MiB 为单位)。
      */
-    Integer getMemoryMb(); // Renamed from memory for clarity
+    Integer getMemory(); // Renamed from memory for clarity
 
     /**
      * @return The working directory inside the container. 容器内的工作目录。
@@ -72,7 +75,7 @@ public interface Container extends ModelEntity {
     /**
      * @return A list of port mappings for the container. 容器的端口映射列表。
      */
-    List<Map<String, Object>> getPorts(); // Structure might vary, needs specific mapping
+    List<String> getPorts(); // Structure might vary, needs specific mapping
 
     /**
      * @return The hostname of the compute node running the container. 运行容器的计算节点的主机名。
@@ -92,7 +95,7 @@ public interface Container extends ModelEntity {
     /**
      * @return Addresses assigned to the container (network details). 分配给容器的地址（网络详细信息）。
      */
-    Map<String, List<Map<String, Object>>> getAddresses(); // Complex structure
+    Map<String, List<ZunContainerAddress>> getAddresses(); // Complex structure
 
     /**
      * @return Security groups associated with the container. 与容器关联的安全组。
@@ -127,18 +130,100 @@ public interface Container extends ModelEntity {
     /**
      * @return The timestamp when the container was created. 容器创建的时间戳。
      */
-    Date getCreatedAt();
+    String getCreatedAt();
 
     /**
      * @return The timestamp when the container was last updated. 容器上次更新的时间戳。
      */
-    Date getUpdatedAt();
+    String getUpdatedAt();
 
     /**
      * @return Links related to the container (e.g., self, bookmark). 与容器相关的链接。
      */
-    List<Link> getLinks();
+    List<GenericLink> getLinks();
 
-    // Add methods for other fields like runtime, hostname, volumes_attached, etc. if needed
-    // 如果需要，添加其他字段的方法，如 runtime, hostname, volumes_attached 等。
+    /**
+     * @return Whether this container allocate a TTY for itself.
+     */
+    Boolean getTty();
+
+    /**
+     * @return The hostname of container.
+     */
+    String getHostname();
+
+    /**
+     * @return The flag of healing non-existent container in docker.
+     */
+    Boolean getAutoHeal();
+
+    /**
+     * @return Give extended privileges to the container.
+     */
+    Boolean getPrivileged();
+
+    String getUserId();
+
+    String getProjectId();
+
+    Integer getDisk();
+
+    ZunContainerHealthcheck getHealthcheck();
+
+    String getRegistryId();
+
+    /**
+     * @return The CPU policy of the container. Its value can be dedicated or shared.
+     * @see CpuPolicy
+     */
+    CpuPolicy getCpuPolicy();
+
+    List<String> getEntrypoint();
+
+    enum CpuPolicy {
+        SHARED,
+        DEDICATED,
+        UNKNOWN;
+
+        @JsonCreator
+        public static CpuPolicy forValue(String value) {
+            if (value != null) {
+                for (Container.CpuPolicy s : Container.CpuPolicy.values()) {
+                    if (s.name().equalsIgnoreCase(value)) {
+                        return s;
+                    }
+                }
+            }
+            return Container.CpuPolicy.UNKNOWN;
+        }
+
+        @JsonValue
+        public String value() {
+            return name().toLowerCase();
+        }
+    }
+
+    enum MountType {
+        VOLUME,
+        BIND,
+        ;
+
+        @JsonCreator
+        public static MountType forValue(String value) {
+            if (value != null) {
+                for (Container.MountType s : Container.MountType.values()) {
+                    if (s.name().equalsIgnoreCase(value)) {
+                        return s;
+                    }
+                }
+            }
+            return Container.MountType.VOLUME;
+        }
+
+        @JsonValue
+        public String value() {
+            return name().toLowerCase();
+        }
+    }
+
 }

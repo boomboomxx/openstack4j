@@ -1,7 +1,6 @@
 package org.openstack4j.openstack.internal;
 
 import java.util.*;
-
 import java.util.function.Function;
 
 import org.openstack4j.api.client.CloudProvider;
@@ -35,6 +34,10 @@ public class BaseOpenStackService {
     protected BaseOpenStackService(ServiceType serviceType, Function<String, String> endpointFunc) {
         this.serviceType = serviceType;
         this.endpointFunc = endpointFunc;
+    }
+
+    public ServiceType getServiceType() {
+        return serviceType;
     }
 
     public String getXOpenstackRequestId() {
@@ -90,8 +93,7 @@ public class BaseOpenStackService {
     }
 
     protected String uri(String path, Object... params) {
-        if (params.length == 0)
-            return path;
+        if (params.length == 0) return path;
         return String.format(path, params);
     }
 
@@ -102,8 +104,12 @@ public class BaseOpenStackService {
     private <R> Invocation<R> builder(Class<R> returnType, String path, HttpMethod method) {
         OSClientSession<?, ?> ses = OSClientSession.getCurrent();
         Objects.requireNonNull(ses, "Unable to retrieve current session. Please verify thread has a current session available.");
-        RequestBuilder<R> req = HttpRequest.builder(returnType).endpointTokenProvider(ses).config(ses.getConfig())
-                .method(method).path(path);
+        RequestBuilder<R> req = HttpRequest
+                .builder(returnType)
+                .endpointTokenProvider(ses)
+                .config(ses.getConfig())
+                .method(method)
+                .path(path);
         Map<String, String> headers = ses.getHeaders();
         if (headers != null && headers.size() > 0) {
             return new Invocation<>(req, serviceType, endpointFunc).headers(headers);
@@ -128,8 +134,7 @@ public class BaseOpenStackService {
     }
 
     protected <T> List<T> toList(T[] arr) {
-        if (arr == null)
-            return Collections.emptyList();
+        if (arr == null) return Collections.emptyList();
         return Arrays.asList(arr);
     }
 
@@ -169,8 +174,7 @@ public class BaseOpenStackService {
         }
 
         public Invocation<R> param(boolean condition, String name, Object value) {
-            if (condition)
-                req.queryParam(name, value);
+            if (condition) req.queryParam(name, value);
             return this;
         }
 
@@ -210,8 +214,7 @@ public class BaseOpenStackService {
         }
 
         public Invocation<R> headers(Map<String, ?> headers) {
-            if (headers != null)
-                req.headers(headers);
+            if (headers != null) req.headers(headers);
             return this;
         }
 

@@ -49,10 +49,10 @@ public interface ContainerService extends RestService {
      * 根据提供的配置创建新容器。
      * Corresponds to {@code POST /v1/containers}
      *
-     * @param containerConfig The configuration object describing the container to create. 描述要创建的容器的配置对象。
+     * @param container The configuration object describing the container to create. 描述要创建的容器的配置对象。
      * @return The newly created Container object. 返回新创建的容器对象。
      */
-    Container create(ContainerCreate containerConfig);
+    Container create(ContainerCreate container);
 
     /**
      * Delete a container.
@@ -61,9 +61,10 @@ public interface ContainerService extends RestService {
      *
      * @param containerIdOrName The unique identifier (UUID) or name of the container to delete. 要删除的容器的唯一标识符 (UUID) 或名称。
      * @param force Whether to force delete the container (optional, defaults to false). 是否强制删除容器 (可选，默认为 false)。
+     * @param stop Whether to stop the container before delete. 是否在删除前停止容器
      * @return An ActionResponse indicating success or failure. 返回指示成功或失败的 ActionResponse。
      */
-    ActionResponse delete(String containerIdOrName, boolean force);
+    ActionResponse delete(String containerIdOrName, boolean force, boolean stop);
 
     /**
      * Start a container.

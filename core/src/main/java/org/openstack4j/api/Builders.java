@@ -7,6 +7,10 @@ import org.openstack4j.model.barbican.builder.ContainerSecretBuilder;
 import org.openstack4j.model.barbican.builder.SecretCreateBuilder;
 import org.openstack4j.model.common.builder.LinkBuilder;
 import org.openstack4j.model.compute.builder.*;
+import org.openstack4j.model.container.builder.AddressBuilder;
+import org.openstack4j.model.container.builder.ContainerNetsBuilder;
+import org.openstack4j.model.container.builder.HealthCheckBuilder;
+import org.openstack4j.model.container.builder.MountsBuilder;
 import org.openstack4j.model.dns.v2.builder.DNSV2Builders;
 import org.openstack4j.model.dns.v2.builder.RecordsetBuilder;
 import org.openstack4j.model.dns.v2.builder.ZoneBuilder;
@@ -42,6 +46,7 @@ import org.openstack4j.openstack.common.GenericLink;
 import org.openstack4j.openstack.compute.builder.NovaBuilders;
 import org.openstack4j.openstack.compute.domain.*;
 import org.openstack4j.openstack.compute.domain.NovaSecGroupExtension.SecurityGroupRule;
+import org.openstack4j.openstack.container.domain.*;
 import org.openstack4j.openstack.dns.v2.builder.DesignateV2Builders;
 import org.openstack4j.openstack.dns.v2.domain.DesignateRecordset;
 import org.openstack4j.openstack.dns.v2.domain.DesignateZone;
@@ -1124,6 +1129,33 @@ public class Builders {
      */
     public static ContainerSecretBuilder containerSecret() {
         return BarbicanContainerSecret.builder();
+    }
+
+    /**
+     * Zun container builder
+     */
+    public static org.openstack4j.model.container.builder.ContainerCreateBuilder zunContainer() {
+        return ZunContainerCreate.builder();
+    }
+
+    public static org.openstack4j.model.container.builder.ContainerUpdateBuilder zunContainerUpdate() {
+        return ZunContainerUpdate.builder();
+    }
+
+    public static ContainerNetsBuilder zunContainerNets() {
+        return ZunContainerNets.builder();
+    }
+
+    public static AddressBuilder zunContainerAddress() {
+        return ZunContainerAddress.builder();
+    }
+
+    public static MountsBuilder zunContainerMounts() {
+        return ZunContainerMounts.builder();
+    }
+
+    public static HealthCheckBuilder zunContainerHealthCheck() {
+        return ZunContainerHealthcheck.builder();
     }
 
     /**

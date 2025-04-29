@@ -6,6 +6,7 @@ import java.util.Set;
 import org.openstack4j.api.artifact.ArtifactService;
 import org.openstack4j.api.barbican.BarbicanService;
 import org.openstack4j.api.compute.ComputeService;
+import org.openstack4j.api.container.ContainerService;
 import org.openstack4j.api.dns.v2.DNSService;
 import org.openstack4j.api.exceptions.RegionEndpointNotFoundException;
 import org.openstack4j.api.gbp.GbpService;
@@ -321,6 +322,12 @@ public interface OSClient<T extends OSClient<T>> {
      */
     DNSService dns();
 
+    /**
+     * Returns the Container Service API
+     *
+     * @return the Container service
+     */
+    ContainerService containers();
     /**
      * OpenStack4j Client which authenticates against version V2
      */

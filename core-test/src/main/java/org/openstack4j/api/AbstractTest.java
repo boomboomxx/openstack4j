@@ -267,6 +267,7 @@ public abstract class AbstractTest {
         NETWORK(9696),
         OCTAVIA(9876),
         COMPUTE(8774),
+        CONTAINER(9517),
         BLOCK_STORAGE(8776),
         METERING(8087),
         TELEMETRY(8087),

@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import org.openstack4j.model.container.ContainerCreate;
+import org.openstack4j.model.container.ContainerNets;
+import org.openstack4j.model.container.Healthcheck;
+import org.openstack4j.model.container.Mounts;
 import org.openstack4j.model.container.builder.ContainerCreateBuilder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -47,20 +50,31 @@ public class ZunContainerCreate implements ContainerCreate {
     @JsonProperty("interactive")
     Boolean interactive;
     @JsonProperty("image_driver")
-    String imageDriver;
+    ImageDriver imageDriver;
     @JsonProperty("security_groups")
     List<String> securityGroups;
     @JsonProperty("hints")
     Map<String, String> hints;
     @JsonProperty("nets")
-    List<Map<String, String>> nets;
-    @JsonProperty("auto_remove")
-    Boolean autoRemove;
+    List<ContainerNets> nets;
     @JsonProperty("runtime")
     String runtime;
     @JsonProperty("hostname")
     String hostname;
-    // mounts
+    @JsonProperty("auto_remove")
+    Boolean autoRemove;
+    @JsonProperty("auto_heal")
+    Boolean autoHeal;
+    @JsonProperty("availability_zone")
+    String availabilityZone;
+    String host;
+    ZunContainerMounts mounts;
+    Boolean privileged;
+    ZunContainerHealthcheck healthcheck;
+    @JsonProperty("exposed_ports")
+    Map<String, Object> exposedPorts;
+    List<String> entrypoint;
+
 
     // --- Getters ---
     @Override public String getName() {
@@ -107,7 +121,7 @@ public class ZunContainerCreate implements ContainerCreate {
         return interactive;
     }
 
-    @Override public String getImageDriver() {
+    @Override public ImageDriver getImageDriver() {
         return imageDriver;
     }
 
@@ -119,7 +133,7 @@ public class ZunContainerCreate implements ContainerCreate {
         return hints;
     }
 
-    @Override public List<Map<String, String>> getNets() {
+    @Override public List<ContainerNets> getNets() {
         return nets;
     }
 
@@ -133,6 +147,46 @@ public class ZunContainerCreate implements ContainerCreate {
 
     @Override public String getHostname() {
         return hostname;
+    }
+
+    @Override
+    public Boolean isAutoHeal() {
+        return autoHeal;
+    }
+
+    @Override
+    public String getAvailabilityZone() {
+        return availabilityZone;
+    }
+
+    @Override
+    public ZunContainerMounts getMounts() {
+        return mounts;
+    }
+
+    @Override
+    public Boolean isPrivileged() {
+        return privileged;
+    }
+
+    @Override
+    public ZunContainerHealthcheck getHealthcheck() {
+        return healthcheck;
+    }
+
+    @Override
+    public Map<String, Object> getExposedPorts() {
+        return exposedPorts;
+    }
+
+    @Override
+    public String getHost() {
+        return host;
+    }
+
+    @Override
+    public List<String> getEntrypoint() {
+        return entrypoint;
     }
 
     /**
@@ -155,7 +209,7 @@ public class ZunContainerCreate implements ContainerCreate {
      * 构建器的具体实现。
      */
     public static class ConcreteContainerCreateBuilder implements ContainerCreateBuilder {
-        ZunContainerCreate model;
+        private ZunContainerCreate model;
 
         ConcreteContainerCreateBuilder() {
             this(new ZunContainerCreate());
@@ -169,7 +223,6 @@ public class ZunContainerCreate implements ContainerCreate {
             if (this.model.securityGroups == null) this.model.securityGroups = new java.util.ArrayList<>();
             if (this.model.hints == null) this.model.hints = new java.util.HashMap<>();
             if (this.model.nets == null) this.model.nets = new java.util.ArrayList<>();
-            if (this.model.command == null) this.model.command = new java.util.ArrayList<>();
         }
 
         @Override public ContainerCreateBuilder name(String name) {
@@ -246,7 +299,7 @@ public class ZunContainerCreate implements ContainerCreate {
             return this;
         }
 
-        @Override public ContainerCreateBuilder imageDriver(String imageDriver) {
+        @Override public ContainerCreateBuilder imageDriver(ImageDriver imageDriver) {
             model.imageDriver = imageDriver;
             return this;
         }
@@ -273,20 +326,20 @@ public class ZunContainerCreate implements ContainerCreate {
             return this;
         }
 
-        @Override public ContainerCreateBuilder nets(List<Map<String, String>> nets) {
+        @Override public ContainerCreateBuilder nets(List<ContainerNets> nets) {
             model.nets = nets;
             return this;
         }
 
         @Override public ContainerCreateBuilder addNet(String networkId) {
             if (model.nets == null) model.nets = new java.util.ArrayList<>();
-            model.nets.add(ImmutableMap.of("network", networkId));
+            model.nets.add(ZunContainerNets.builder().network(networkId).build());
             return this;
         }
 
         @Override public ContainerCreateBuilder addNetPort(String portId) {
             if (model.nets == null) model.nets = new java.util.ArrayList<>();
-            model.nets.add(ImmutableMap.of("port", portId));
+            model.nets.add(ZunContainerNets.builder().port(portId).build());
             return this;
         }
 
@@ -306,8 +359,56 @@ public class ZunContainerCreate implements ContainerCreate {
         }
 
         @Override
+        public ContainerCreateBuilder autoHeal(boolean autoHeal) {
+            model.autoHeal = autoHeal;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder availabilityZone(String availabilityZone) {
+            model.availabilityZone = availabilityZone;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder mounts(Mounts mounts) {
+            model.mounts = (ZunContainerMounts) mounts;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder privileged(boolean privileged) {
+            model.privileged = privileged;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder healthcheck(Healthcheck healthcheck) {
+            model.healthcheck = (ZunContainerHealthcheck) healthcheck;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder exposedPorts(Map<String, Object> exposedPorts) {
+            model.exposedPorts = exposedPorts;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder host(String host) {
+            model.host = host;
+            return this;
+        }
+
+        @Override
+        public ContainerCreateBuilder entrypoint(List<String> entrypoint) {
+            model.entrypoint = entrypoint;
+            return this;
+        }
+
+        @Override
         public ContainerCreate build() {
-            checkNotNull(model.image, "Image must be set"); // Validate required fields
+            checkNotNull(model.image, "Image must be set");
             return model;
         }
 

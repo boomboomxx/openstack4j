@@ -1,5 +1,7 @@
 package org.openstack4j.api.types;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public enum ServiceType {
@@ -9,6 +11,7 @@ public enum ServiceType {
     COMPUTE("nova", "compute"),
     IMAGE("glance", "image"),
     BLOCK_STORAGE("cinder", "volume"),
+    BLOCK_STORAGE_V3("cinderv3", "volumev3"),
     OBJECT_STORAGE("object-store", "object-store"),
     NETWORK("neutron", "network"),
     OCTAVIA("octavia", "load-balancer"),
@@ -66,4 +69,11 @@ public enum ServiceType {
     private Pattern getServicePattern() {
         return this.servicePattern;
     }
+
+    public static List<ServiceType> MICRO_VERSION_SERVICE = Arrays.asList(CONTAINER, BLOCK_STORAGE_V3, COMPUTE, MAGNUM, PLACEMENT, SHARE);
+
+    public boolean isMicroVersionService() {
+        return MICRO_VERSION_SERVICE.contains(this);
+    }
+
 }
