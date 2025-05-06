@@ -17,6 +17,7 @@ public interface Authentication extends ModelEntity {
 
         Token getToken();
 
+        ApplicationCredential getApplicationCredential();
         List<String> getMethods();
 
         public interface Password {
@@ -37,6 +38,20 @@ public interface Authentication extends ModelEntity {
         public interface Token {
 
             String getId();
+
+        }
+
+        interface ApplicationCredential extends ResourceEntity {
+
+            String getSecret();
+
+            Boolean isRestricted();
+
+            User getUser();
+
+            interface User extends ResourceEntity {
+
+            }
 
         }
 

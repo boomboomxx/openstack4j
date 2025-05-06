@@ -26,6 +26,10 @@ public abstract class OSClientBuilder<R, T extends IOSClientBuilder<R, T>> imple
     Config config;
     String endpoint;
     String user;
+    String applicationCredentialId;
+    String applicationCredentialSecret;
+    String applicationCredentialName;
+    String applicationCredentialUserId;
     String password;
     Facing perspective;
     CloudProvider provider = CloudProvider.UNKNOWN;
@@ -143,6 +147,21 @@ public abstract class OSClientBuilder<R, T extends IOSClientBuilder<R, T>> imple
         }
 
         @Override
+        public V3 applicationCredential(String id, String secret) {
+            this.applicationCredentialId = id;
+            this.applicationCredentialSecret = secret;
+            return this;
+        }
+
+        @Override
+        public V3 applicationCredential(String name, String secret, String userId) {
+            this.applicationCredentialName = name;
+            this.applicationCredentialSecret = secret;
+            this.applicationCredentialUserId = userId;
+            return this;
+        }
+
+        @Override
         public ClientV3 credentials(String user, String password, Identifier domain) {
             this.user = user;
             this.password = password;
@@ -168,6 +187,14 @@ public abstract class OSClientBuilder<R, T extends IOSClientBuilder<R, T>> imple
             // credential based authentication
             if (user != null && user.length() > 0)
                 return (OSClientV3) OSAuthenticator.invoke(new KeystoneAuth(user, password, domain, scope), endpoint, perspective, config, provider);
+            // application credential based authentication
+            if (applicationCredentialSecret != null &&
+                    ((applicationCredentialId != null) || (applicationCredentialName != null && applicationCredentialUserId != null))
+            ) {
+                KeystoneAuth.AuthIdentity.AuthApplicationCredential cd = new KeystoneAuth.AuthIdentity.AuthApplicationCredential(applicationCredentialId, applicationCredentialName, applicationCredentialSecret, applicationCredentialUserId);
+
+                return (OSClientV3) OSAuthenticator.invoke(new KeystoneAuth(cd), endpoint, perspective, config, provider);
+            }
             // Use tokenless auth finally
             return (OSClientV3) OSAuthenticator.invoke(new KeystoneAuth(scope, Auth.Type.TOKENLESS), endpoint, perspective, config, provider);
         }

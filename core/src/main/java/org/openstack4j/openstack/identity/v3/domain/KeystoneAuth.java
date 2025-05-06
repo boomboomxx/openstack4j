@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import org.openstack4j.model.ResourceEntity;
 import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.identity.AuthStore;
 import org.openstack4j.model.identity.AuthVersion;
@@ -57,6 +59,16 @@ public class KeystoneAuth implements Authentication, AuthStore {
     public KeystoneAuth(AuthScope scope, Type type) {
         this.scope = scope;
         this.type = type;
+    }
+
+    public KeystoneAuth(AuthIdentity.AuthApplicationCredential applicationCredential) {
+        this.type = Type.APPLICATION_CREDENTIALS;
+        this.identity = AuthIdentity.createApplicationCredentialType(applicationCredential);
+    }
+
+    public KeystoneAuth(String applicationCredentialId, String applicationCredentialSecret, Identity.ApplicationCredential.User user) {
+        this.type = Type.APPLICATION_CREDENTIALS;
+        this.identity = AuthIdentity.createApplicationCredentialType(applicationCredentialId, applicationCredentialSecret, user);
     }
 
     protected KeystoneAuth(Type type) {
@@ -113,6 +125,8 @@ public class KeystoneAuth implements Authentication, AuthStore {
 
         private AuthPassword password;
         private AuthToken token;
+        @JsonProperty("application_credential")
+        private AuthApplicationCredential applicationCredential;
         private List<String> methods = new ArrayList<>();
 
         static AuthIdentity createTokenType(String tokenId) {
@@ -133,6 +147,21 @@ public class KeystoneAuth implements Authentication, AuthStore {
             return identity;
         }
 
+        static AuthIdentity createApplicationCredentialType(AuthApplicationCredential credential) {
+            AuthIdentity identity = new AuthIdentity();
+            String userId = Optional.ofNullable(credential.getUser()).map(ResourceEntity::getId).orElse(null);
+            identity.applicationCredential = credential;
+            identity.methods.add("application_credential");
+            return identity;
+        }
+
+        static AuthIdentity createApplicationCredentialType(String name, String secret, ApplicationCredential.User user) {
+            AuthIdentity identity = new AuthIdentity();
+            identity.applicationCredential = new AuthApplicationCredential(name, secret, user);
+            identity.methods.add("application_credential");
+            return identity;
+        }
+
         @Override
         public Password getPassword() {
             return password;
@@ -144,8 +173,86 @@ public class KeystoneAuth implements Authentication, AuthStore {
         }
 
         @Override
+        public ApplicationCredential getApplicationCredential() {
+            return applicationCredential;
+        }
+
+        @Override
         public List<String> getMethods() {
             return methods;
+        }
+
+        public static final class AuthApplicationCredential extends BasicResourceEntity implements ApplicationCredential, Serializable {
+
+
+            private static final long serialVersionUID = 1L;
+            private String id;
+            private String secret;
+            private String name;
+            private User user;
+
+            public AuthApplicationCredential() {
+            }
+
+            public AuthApplicationCredential(String id, String name, String secret, String userId) {
+                this.id = id;
+                this.name = name;
+                this.secret = secret;
+                if (userId != null) {
+                    this.user = new ApplicationCredentialUser(userId);
+                }
+            }
+
+            public AuthApplicationCredential(String id, String secret) {
+                this.id = id;
+                this.secret = secret;
+            }
+
+            public AuthApplicationCredential(String name, String secret, User user) {
+                this.name = name;
+                this.secret = secret;
+                this.user = user;
+            }
+
+            @Override
+            public String getId() {
+                return id;
+            }
+
+            @Override
+            public String getSecret() {
+                return secret;
+            }
+
+            @Override
+            public Boolean isRestricted() {
+                return null;
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public User getUser() {
+                return user;
+            }
+
+            public static final class ApplicationCredentialUser extends BasicResourceEntity implements ApplicationCredential.User, Serializable {
+                private static final long serialVersionUID = 1L;
+                @JsonProperty
+                private String id;
+
+                public ApplicationCredentialUser(String id) {
+                    this.id = id;
+                }
+
+                @Override
+                public String getId() {
+                    return id;
+                }
+            }
         }
 
         public static final class AuthToken implements Token, Serializable {

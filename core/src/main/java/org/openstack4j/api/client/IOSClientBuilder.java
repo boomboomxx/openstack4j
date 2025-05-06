@@ -135,7 +135,9 @@ public interface IOSClientBuilder<R, T extends IOSClientBuilder<R, T>> {
      * OpenStack4j Client builder which authenticates against version V3
      */
     public interface V3 extends IOSClientBuilder<OSClientV3, V3> {
+        V3 applicationCredential(String id, String secret);
 
+        V3 applicationCredential(String name, String secret, String userId);
         /**
          * The authentication credentials and default scoped domain
          *
