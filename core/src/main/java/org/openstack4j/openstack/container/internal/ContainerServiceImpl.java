@@ -138,19 +138,37 @@ public class ContainerServiceImpl extends BaseContainerService implements Contai
         checkNotNull(containerIdOrName);
         checkNotNull(params);
         checkNotNull(params.getCommand(), "Command must be provided for execute");
-        // API might expect command in payload or query param - check Zun docs
-        // Assuming payload here for potential complexity
         return post(ZunExecResponse.class, uri("%s/%s/execute", CONTAINER_PATH, containerIdOrName))
-                .params(ImmutableMap.of("command", params.getCommand(), "interactive", params.isInteractive()))
+                .params(ImmutableMap.of("command", params.getCommand(), "interactive", params.isInteractive(), "run", params.isRun()))
+                .execute();
+    }
+
+    @Override
+    public ActionResponse resize(String containerIdOrName, ExecParameters params) {
+        checkNotNull(containerIdOrName);
+        checkNotNull(params);
+        checkNotNull(params.getWidth(), "width must be provided for resize");
+        checkNotNull(params.getHeight(), "width must be provided for resize");
+        return post(ActionResponse.class, uri("%s/%s/resize", CONTAINER_PATH, containerIdOrName))
+                .params(params.getQueryParameters())
+                .execute();
+    }
+
+    @Override
+    public ActionResponse executeResize(String containerIdOrName, ExecParameters params) {
+        checkNotNull(containerIdOrName);
+        checkNotNull(params.getExecId(), "exec_id must be provided for resize");
+        checkNotNull(params.getWidth(), "width must be provided for resize");
+        checkNotNull(params.getHeight(), "width must be provided for resize");
+
+        return post(ActionResponse.class, uri("%s/%s/execute_resize", CONTAINER_PATH, containerIdOrName))
+                .params(params.getQueryParameters())
                 .execute();
     }
 
     @Override
     public String attach(String containerIdOrName) {
         checkNotNull(containerIdOrName);
-        // Attach usually returns a JSON structure containing the URL
-        // Need a specific model (e.g., AttachResponse) if it's not just a plain string URL
-        // Assuming it returns JSON like {"url": "ws://..."} mapped to a simple class
         AttachResponse response = get(AttachResponse.class, uri("%s/%s/attach", CONTAINER_PATH, containerIdOrName)).execute();
         return response != null ? response.getUrl(): null;
     }

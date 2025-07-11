@@ -15,5 +15,13 @@ public interface ExecParameters extends ModelEntity, Buildable<ExecParametersBui
 
     Boolean isInteractive(); // Whether to allocate a TTY
 
+    Boolean isRun();
+
     Map<String, Object> getQueryParameters();
+
+    String getExecId();
+
+    String getHeight();
+
+    String getWidth();
 }

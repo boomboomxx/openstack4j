@@ -10,17 +10,32 @@ import org.openstack4j.model.container.ExecResponse;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ZunExecResponse implements ExecResponse {
-    // Field names depend on actual Zun API response for execute
-    @JsonProperty("output_url") // Example field name
-            String url;
-    @JsonProperty("attach_token") // Example field name
-    String attachToken;
+    @JsonProperty("output")
+    String output;
+    @JsonProperty("proxy_url")
+    String url;
+    @JsonProperty("exit_code")
+    String exitCode;
+    @JsonProperty("exec_id")
+    String execId;
 
     @Override public String getUrl() {
         return url;
     }
 
-    @Override public String getAttachToken() {
-        return attachToken;
+    @Override
+    public String getOutput() {
+        return output;
     }
+
+    @Override
+    public String getExitCode() {
+        return exitCode;
+    }
+
+    @Override
+    public String getExecId() {
+        return execId;
+    }
+
 }

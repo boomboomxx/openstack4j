@@ -143,6 +143,18 @@ public interface ContainerService extends RestService {
     ExecResponse execute(String containerIdOrName, ExecParameters params);
 
     /**
+     * Resize tty to a container
+     *
+     * @param containerIdOrName The unique identifier (UUID) or name of the container. 容器的唯一标识符 (UUID) 或名称。
+     * @param params Parameters for the command execution (command, interactive). 命令执行的参数, 公用。
+     * @return None
+     */
+    ActionResponse resize(String containerIdOrName, ExecParameters params);
+
+
+    ActionResponse executeResize(String containerIdOrName, ExecParameters params);
+
+    /**
      * Get a URL to attach to a running container's TTY.
      * 获取附加到运行中容器 TTY 的 URL。
      * Corresponds to {@code GET /v1/containers/{container_id}/attach}

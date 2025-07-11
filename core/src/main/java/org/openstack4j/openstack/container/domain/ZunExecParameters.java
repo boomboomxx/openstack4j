@@ -3,10 +3,9 @@ package org.openstack4j.openstack.container.domain;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.openstack4j.model.container.ExecParameters;
 import org.openstack4j.model.container.builder.ExecParametersBuilder;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author xx
@@ -16,6 +15,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ZunExecParameters implements ExecParameters {
     String command;
     Boolean interactive;
+    Boolean run;
+    String execId;
+    @JsonProperty("h")
+    String height;
+    @JsonProperty("w")
+    String width;
 
     public static ExecParametersBuilder builder() {
         return new ConcreteExecParametersBuilder();
@@ -30,12 +35,35 @@ public class ZunExecParameters implements ExecParameters {
     }
 
     @Override
+    public Boolean isRun() {
+        return run;
+    }
+
+    @Override
     public Map<String, Object> getQueryParameters() {
         Map<String, Object> params = new java.util.HashMap<>();
-        checkNotNull(command, "Command must be set for execute");
-        params.put("command", command); // Command might be part of payload, check API doc
+        if (run != null) params.put("run", run);
+        if (execId != null) params.put("exec_id", execId);
+        if (height != null) params.put("h", height);
+        if (width != null) params.put("w", width);
+        if (command != null) params.put("command", command);
         if (interactive != null) params.put("interactive", interactive); // This might also be payload
         return params; // Check API: command/interactive might be in POST body, not query params
+    }
+
+    @Override
+    public String getExecId() {
+        return execId;
+    }
+
+    @Override
+    public String getHeight() {
+        return height;
+    }
+
+    @Override
+    public String getWidth() {
+        return width;
     }
 
     @Override
@@ -63,8 +91,32 @@ public class ZunExecParameters implements ExecParameters {
             return this;
         }
 
+        @Override
+        public ExecParametersBuilder run(boolean run) {
+            model.run = run;
+            return this;
+        }
+
+        @Override
+        public ExecParametersBuilder execId(String execId) {
+            model.execId = execId;
+
+            return this;
+        }
+
+        @Override
+        public ExecParametersBuilder width(String width) {
+            model.width = width;
+            return this;
+        }
+
+        @Override
+        public ExecParametersBuilder height(String height) {
+            model.height = height;
+            return this;
+        }
+
         @Override public ExecParameters build() {
-            checkNotNull(model.command, "Command must be set");
             return model;
         }
 

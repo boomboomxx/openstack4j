@@ -12,8 +12,9 @@ public interface ExecResponse extends ModelEntity {
      */
     String getUrl();
 
-    /**
-     * @return An optional attach token (usage might vary). 可选的附加令牌（用法可能不同）。
-     */
-    String getAttachToken(); // Or similar field name based on actual API
+    String getOutput();
+
+    String getExitCode();
+
+    String getExecId();
 }

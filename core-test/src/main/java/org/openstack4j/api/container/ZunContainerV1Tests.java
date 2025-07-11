@@ -29,9 +29,9 @@ public class ZunContainerV1Tests extends AbstractTest {
 
     @Test
     public void testListContainers() {
-        respondWith(200, "{\"containers\": []}");
+//        respondWith(200, "{\"containers\": []}");
         List<? extends Container> list = osv3().containers().list();
-        assertEquals(list.size(), 1);
+        assertEquals(list.size(), 2);
     }
 
     @Test
@@ -93,10 +93,25 @@ public class ZunContainerV1Tests extends AbstractTest {
 
     @Test
     public void testContainerExecute() {
-        ExecParameters params = ZunExecParameters.builder().command("pwd").interactive(true).build();
-        ExecResponse resp = osv3().containers().execute("test", params);
-        System.out.printf((resp.getAttachToken()) + "\n", resp.getUrl());
-        assertNotNull(resp.getUrl());
+        ExecParameters params = ZunExecParameters.builder().command("sh").interactive(true).run(false).build();
+        ExecResponse resp = osv3().containers().execute("72765c19-5917-43e3-972d-45f482b2c51f", params);
+        System.out.println(resp.getExecId() + "\n" + resp.getOutput() + "\n" + resp.getUrl());
+        assertNotNull(resp.getExecId());
+    }
+
+    @Test
+    public void testContainerResize() {
+        ExecParameters param = ZunExecParameters.builder().width("1024").height("768").build();
+        ActionResponse resp = osv3().containers().resize("72765c19-5917-43e3-972d-45f482b2c51f", param);
+        assertTrue(resp.isSuccess());
+    }
+
+    @Test
+    public void testContainerExecuteResize() {
+        ExecParameters param = ZunExecParameters.builder().width("1024").height("999").execId("a276a2349ffad4ce5587e81ba700f03da7885e44165c78dd575c2c98c65722e6").build();
+        ActionResponse resp = osv3().containers().executeResize("72765c19-5917-43e3-972d-45f482b2c51f", param);
+        System.out.println(resp.toString());
+        assertTrue(resp.isSuccess());
     }
 
 

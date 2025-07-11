@@ -11,4 +11,12 @@ public interface ExecParametersBuilder extends Buildable.Builder<ExecParametersB
     ExecParametersBuilder command(String command);
 
     ExecParametersBuilder interactive(boolean interactive);
+
+    ExecParametersBuilder run(boolean run);
+
+    ExecParametersBuilder execId(String execId);
+
+    ExecParametersBuilder width(String width);
+
+    ExecParametersBuilder height(String height);
 }
