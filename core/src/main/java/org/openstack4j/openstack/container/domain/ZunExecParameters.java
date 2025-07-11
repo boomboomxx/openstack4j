@@ -47,7 +47,10 @@ public class ZunExecParameters implements ExecParameters {
         if (height != null) params.put("h", height);
         if (width != null) params.put("w", width);
         if (command != null) params.put("command", command);
-        if (interactive != null) params.put("interactive", interactive); // This might also be payload
+        if (interactive != null) {
+            params.put("interactive", interactive);
+            if (interactive) params.put("run", false);
+        }
         return params; // Check API: command/interactive might be in POST body, not query params
     }
 
